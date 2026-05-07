@@ -23,17 +23,13 @@ st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap');
 
-/* === Global font — target text, NOT icon elements === */
-html, body, p, li, label, div, span, h1, h2, h3, h4, h5, h6,
-input[type="text"], input[type="password"], textarea, select,
-.stApp, .stMarkdown, [data-testid] {
+/* === Global font — only genuine text elements, never div/span (those carry icon ligatures) === */
+p, li, h1, h2, h3, h4, h5, h6, label,
+input[type="text"], input[type="password"],
+input[type="email"], input[type="search"],
+textarea, .stMarkdown p, .stMarkdown li,
+[data-testid="stText"], [data-testid="stCaption"] {
     font-family: 'Source Sans 3', 'Source Sans Pro', Arial, sans-serif !important;
-}
-/* Preserve Material icon fonts */
-[class*="material"], .material-icons,
-.material-symbols-rounded, .material-symbols-outlined,
-[data-testid="stSidebarCollapseButton"] * {
-    font-family: inherit;
 }
 
 /* === Targeted border-radius removal (not wildcard) === */
