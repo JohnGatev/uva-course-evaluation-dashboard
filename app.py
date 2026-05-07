@@ -23,13 +23,20 @@ st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap');
 
-/* === Global font === */
-html, body, [class*="css"], .stApp, * {
+/* === Global font — target text, NOT icon elements === */
+html, body, p, li, label, div, span, h1, h2, h3, h4, h5, h6,
+input[type="text"], input[type="password"], textarea, select,
+.stApp, .stMarkdown, [data-testid] {
     font-family: 'Source Sans 3', 'Source Sans Pro', Arial, sans-serif !important;
 }
+/* Preserve Material icon fonts */
+[class*="material"], .material-icons,
+.material-symbols-rounded, .material-symbols-outlined,
+[data-testid="stSidebarCollapseButton"] * {
+    font-family: inherit;
+}
 
-/* === Kill ALL border-radius === */
-*, *::before, *::after { border-radius: 0 !important; }
+/* === Targeted border-radius removal (not wildcard) === */
 [data-baseweb="select"] > div,
 [data-baseweb="select"] > div > div,
 [data-baseweb="input"],
@@ -38,7 +45,17 @@ html, body, [class*="css"], .stApp, * {
 [data-baseweb="popover"] > div,
 [data-baseweb="menu"],
 [data-baseweb="notification"],
-button, input, textarea, select { border-radius: 0 !important; }
+.stButton > button,
+.stDownloadButton > button,
+.stFormSubmitButton > button,
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="search"],
+textarea { border-radius: 0 !important; }
+/* Keep radio circles and checkboxes intact */
+input[type="radio"]    { border-radius: 50% !important; }
+input[type="checkbox"] { border-radius: 2px !important; }
 
 /* === Sidebar === */
 section[data-testid="stSidebar"] {
@@ -77,6 +94,20 @@ section[data-testid="stSidebar"] .stFormSubmitButton > button {
     background-color: #bc0031 !important;
     color: white !important;
     border: none !important;
+}
+/* Sidebar file uploader browse button */
+section[data-testid="stSidebar"] [data-testid="stFileUploaderDropzone"] {
+    background-color: #2c2827 !important;
+    border-color: #A8A29F !important;
+}
+section[data-testid="stSidebar"] [data-testid="stFileUploaderDropzone"] button {
+    background-color: #bc0031 !important;
+    color: white !important;
+    border: none !important;
+}
+section[data-testid="stSidebar"] [data-testid="stFileUploaderDropzone"] small,
+section[data-testid="stSidebar"] [data-testid="stFileUploaderDropzone"] p {
+    color: #D7D6D4 !important;
 }
 
 /* === Main headings === */
