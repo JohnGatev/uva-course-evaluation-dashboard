@@ -1,0 +1,18 @@
+# Runtime-generated analysis data
+Analyses/
+JSON Outputs/
+Markdown Summaries/
+Executive_Course_Summary.md
+sentiment_scores.json
+
+# Raw CSV uploads (may contain student data)
+*.csv
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.env
+
+# macOS
+.DS_Store
