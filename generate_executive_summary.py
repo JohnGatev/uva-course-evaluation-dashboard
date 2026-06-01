@@ -70,7 +70,7 @@ def generate_executive_summary(api_key):
             {"role": "user", "content": f"Here are the individual aspect summaries to synthesize:\n\n{combined_summaries}"}
         ],
         "temperature": 0.3,
-        "max_tokens": 8192
+        "max_tokens": 32768
     }
 
     print("Calling LLM proxy to generate the course-wide Executive Summary...", flush=True)

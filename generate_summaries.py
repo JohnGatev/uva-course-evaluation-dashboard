@@ -138,7 +138,7 @@ def generate_summary_for_aspect(api_key, aspect_json_path, rag_system):
             {"role": "user", "content": f"Here is the evaluation JSON data for the aspect. Please summarize it according to the instructions and retrieved knowledge base.\n\n{json.dumps(aspect_data, indent=2)}"}
         ],
         "temperature": 0.3,
-        "max_tokens": 8192
+        "max_tokens": 32768
     }
 
     print(f"Calling LLM proxy for aspect: {aspect_key} ...")
@@ -182,7 +182,7 @@ def main():
     print(f"Found {len(json_files)} aspect JSON files. Running in parallel...", flush=True)
     saved = 0
 
-    with ThreadPoolExecutor(max_workers=7) as executor:
+    with ThreadPoolExecutor(max_workers=3) as executor:
         futures = {
             executor.submit(generate_summary_for_aspect, api_key, jf, rag): jf
             for jf in json_files
