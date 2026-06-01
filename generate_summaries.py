@@ -3,7 +3,7 @@ import json
 import requests
 import glob
 
-API_PROXY = "https://ai-research-proxy.azurewebsites.net/v1/chat/completions"
+API_PROXY = "https://llmproxy.uva.nl/"
 MODEL_NAME = "gpt-oss-120b"
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
