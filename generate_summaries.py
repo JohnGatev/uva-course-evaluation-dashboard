@@ -3,6 +3,7 @@ import sys
 import json
 import requests
 import glob
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 API_PROXY = "https://llmproxy.uva.nl/chat/completions"
 MODEL_NAME = "gpt-oss-120b"
@@ -178,24 +179,30 @@ def main():
         print(f"ERROR: No JSON files found in {INPUT_DIR}.", flush=True)
         sys.exit(1)
 
-    print(f"Found {len(json_files)} aspect JSON files.", flush=True)
+    print(f"Found {len(json_files)} aspect JSON files. Running in parallel...", flush=True)
     saved = 0
-    for json_file in json_files:
-        aspect_key, summary = generate_summary_for_aspect(api_key, json_file, rag)
-        if summary:
-            out_file = os.path.join(OUTPUT_DIR, f"{aspect_key}_summary.md")
-            with open(out_file, 'w', encoding='utf-8') as f:
-                f.write(summary)
-            print(f"  -> Saved: {out_file}", flush=True)
-            saved += 1
-        else:
-            print(f"  -> FAILED (no summary returned) for: {aspect_key}", flush=True)
+
+    with ThreadPoolExecutor(max_workers=7) as executor:
+        futures = {
+            executor.submit(generate_summary_for_aspect, api_key, jf, rag): jf
+            for jf in json_files
+        }
+        for future in as_completed(futures):
+            aspect_key, summary = future.result()
+            if summary:
+                out_file = os.path.join(OUTPUT_DIR, f"{aspect_key}_summary.md")
+                with open(out_file, 'w', encoding='utf-8') as f:
+                    f.write(summary)
+                print(f"  -> Saved: {aspect_key}", flush=True)
+                saved += 1
+            else:
+                print(f"  -> FAILED: {aspect_key}", flush=True)
 
     if saved == 0:
         print("ERROR: No summaries were saved. All LLM calls failed.", flush=True)
         sys.exit(1)
 
-    print(f"Done. {saved}/{len(json_files)} summaries saved.")
+    print(f"Done. {saved}/{len(json_files)} summaries saved.", flush=True)
 
 
 if __name__ == '__main__':
