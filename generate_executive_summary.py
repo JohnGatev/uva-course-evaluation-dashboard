@@ -2,7 +2,7 @@ import os
 import requests
 import glob
 
-API_PROXY = "https://llmproxy.uva.nl/"
+API_PROXY = "https://llmproxy.uva.nl/chat/completions"
 MODEL_NAME = "gpt-oss-120b"
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
