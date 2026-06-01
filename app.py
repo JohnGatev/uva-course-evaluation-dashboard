@@ -601,12 +601,29 @@ def run_pipeline(api_key, csv_file_object):
 
     # Step 2: Aspect summaries
     msg.info("Step 2/3: Generating aspect summaries (this may take a few minutes)...")
-    subprocess.run([sys.executable, os.path.join(BASE_DIR, "generate_summaries.py")], env=env, check=True)
+    r2 = subprocess.run(
+        [sys.executable, os.path.join(BASE_DIR, "generate_summaries.py")],
+        env=env, capture_output=True, text=True
+    )
+    if r2.stdout:
+        with st.expander("Summary generation log", expanded=r2.returncode != 0):
+            st.code(r2.stdout + r2.stderr)
+    if r2.returncode != 0:
+        st.error(f"Summary generation failed (exit {r2.returncode}). See log above.")
+        return
     for f in glob.glob(os.path.join(temp_md, "*")): shutil.copy(f, md_out_dir)
 
     # Step 3: Executive summary
     msg.info("Step 3/3: Generating executive summary...")
-    subprocess.run([sys.executable, os.path.join(BASE_DIR, "generate_executive_summary.py")], env=env, check=True)
+    r3 = subprocess.run(
+        [sys.executable, os.path.join(BASE_DIR, "generate_executive_summary.py")],
+        env=env, capture_output=True, text=True
+    )
+    if r3.stdout:
+        with st.expander("Executive summary log", expanded=r3.returncode != 0):
+            st.code(r3.stdout + r3.stderr)
+    if r3.returncode != 0:
+        st.error(f"Executive summary failed (exit {r3.returncode}). See log above.")
     exe_sum = os.path.join(BASE_DIR, "Executive_Course_Summary.md")
     if os.path.exists(exe_sum):
         shutil.copy(exe_sum, os.path.join(run_dir, "Executive_Course_Summary.md"))

@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import requests
 import glob
@@ -140,16 +141,18 @@ def generate_summary_for_aspect(api_key, aspect_json_path, rag_system):
     }
 
     print(f"Calling LLM proxy for aspect: {aspect_key} ...")
+    response = None
     try:
-        response = requests.post(API_PROXY, headers=headers, json=payload)
+        response = requests.post(API_PROXY, headers=headers, json=payload, timeout=180)
         response.raise_for_status()
         data = response.json()
         summary_text = data['choices'][0]['message']['content']
         return aspect_key, summary_text
     except Exception as e:
-        print(f"Error calling LLM proxy for {aspect_key}: {e}")
-        if 'response' in locals() and response is not None:
-            print("Response details:", response.text)
+        print(f"ERROR calling LLM proxy for {aspect_key}: {type(e).__name__}: {e}", flush=True)
+        if response is not None:
+            print(f"  HTTP status: {response.status_code}", flush=True)
+            print(f"  Response body: {response.text[:500]}", flush=True)
         return aspect_key, None
 
 
@@ -158,8 +161,13 @@ def main():
     if not api_key:
         api_key = input("Enter your API key for the AI Proxy: ").strip()
     if not api_key:
-        print("Error: API key is required.")
-        return
+        print("Error: API key is required.", flush=True)
+        sys.exit(1)
+
+    print(f"Proxy endpoint: {API_PROXY}", flush=True)
+    print(f"Model: {MODEL_NAME}", flush=True)
+    print(f"Input dir: {INPUT_DIR}", flush=True)
+    print(f"Output dir: {OUTPUT_DIR}", flush=True)
 
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
@@ -167,18 +175,27 @@ def main():
 
     json_files = glob.glob(os.path.join(INPUT_DIR, "*.json"))
     if not json_files:
-        print(f"No JSON files found in {INPUT_DIR}.")
-        return
+        print(f"ERROR: No JSON files found in {INPUT_DIR}.", flush=True)
+        sys.exit(1)
 
+    print(f"Found {len(json_files)} aspect JSON files.", flush=True)
+    saved = 0
     for json_file in json_files:
         aspect_key, summary = generate_summary_for_aspect(api_key, json_file, rag)
         if summary:
             out_file = os.path.join(OUTPUT_DIR, f"{aspect_key}_summary.md")
             with open(out_file, 'w', encoding='utf-8') as f:
                 f.write(summary)
-            print(f"  -> Saved to {out_file}\n")
+            print(f"  -> Saved: {out_file}", flush=True)
+            saved += 1
+        else:
+            print(f"  -> FAILED (no summary returned) for: {aspect_key}", flush=True)
 
-    print("Done generating all summaries.")
+    if saved == 0:
+        print("ERROR: No summaries were saved. All LLM calls failed.", flush=True)
+        sys.exit(1)
+
+    print(f"Done. {saved}/{len(json_files)} summaries saved.")
 
 
 if __name__ == '__main__':

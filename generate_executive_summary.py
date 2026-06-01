@@ -1,4 +1,5 @@
 import os
+import sys
 import requests
 import glob
 
@@ -72,21 +73,24 @@ def generate_executive_summary(api_key):
         "max_tokens": 8192
     }
 
-    print("Calling LLM proxy to generate the course-wide Executive Summary...")
+    print("Calling LLM proxy to generate the course-wide Executive Summary...", flush=True)
+    response = None
     try:
-        response = requests.post(API_PROXY, headers=headers, json=payload)
+        response = requests.post(API_PROXY, headers=headers, json=payload, timeout=180)
         response.raise_for_status()
         data = response.json()
         final_doc = data['choices'][0]['message']['content']
 
         with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
             f.write(final_doc)
-        print(f"Saved course-wide synthesis to: {OUTPUT_FILE}")
+        print(f"Saved course-wide synthesis to: {OUTPUT_FILE}", flush=True)
 
     except Exception as e:
-        print(f"Error calling LLM proxy: {e}")
-        if 'response' in locals() and response is not None:
-            print("Response details:", response.text)
+        print(f"ERROR calling LLM proxy: {type(e).__name__}: {e}", flush=True)
+        if response is not None:
+            print(f"  HTTP status: {response.status_code}", flush=True)
+            print(f"  Response body: {response.text[:500]}", flush=True)
+        sys.exit(1)
 
 
 def main():
@@ -94,8 +98,8 @@ def main():
     if not api_key:
         api_key = input("Enter your API key for the AI Proxy: ").strip()
     if not api_key:
-        print("Error: API key is required.")
-        return
+        print("Error: API key is required.", flush=True)
+        sys.exit(1)
 
     generate_executive_summary(api_key)
 
